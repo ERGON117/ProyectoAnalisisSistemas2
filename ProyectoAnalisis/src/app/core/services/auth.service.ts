@@ -1,0 +1,64 @@
+// src/app/core/services/auth.service.ts
+import { Injectable } from '@angular/core';
+import { HttpClient } from '@angular/common/http';
+import { Observable, BehaviorSubject } from 'rxjs';
+import { tap } from 'rxjs/operators';
+import { LoginRequest } from '../models/login-request.model';
+import { AuthResponse } from '../models/auth-response.model';
+import { User } from '../models/user.model';
+import { ChangePasswordRequest } from '../models/change-password-request.model';
+import { environment } from '../../../environments/environment';
+
+@Injectable({
+  providedIn: 'root'
+})
+export class AuthService {
+  private apiUrl = environment.apiUrl;
+  private userSubject = new BehaviorSubject<User | null>(null);
+  user$ = this.userSubject.asObservable();
+
+  constructor(private http: HttpClient) {}
+
+  login(loginRequest: LoginRequest): Observable<AuthResponse> {
+    return this.http.post<AuthResponse>(`${this.apiUrl}/auth/login`, loginRequest)
+      .pipe(
+        tap(response => {
+          if (response.success && response.token) {
+            localStorage.setItem('token', response.token);
+            this.getProfile().subscribe();
+          }
+        })
+      );
+  }
+
+  logout(): Observable<AuthResponse> {
+    const token = localStorage.getItem('token');
+    return this.http.post<AuthResponse>(`${this.apiUrl}/auth/logout`, {}, {
+      headers: { Authorization: `Bearer ${token}` }
+    }).pipe(
+      tap(() => {
+        localStorage.removeItem('token');
+        this.userSubject.next(null);
+      })
+    );
+  }
+
+  // src/app/core/services/auth.service.ts
+// src/app/core/services/auth.service.ts
+getProfile(): Observable<User> {
+  return this.http.get<User>(`${this.apiUrl}/auth/profile`).pipe(
+    tap(user => {
+      console.log('Profile response:', user); // Ya está
+      this.userSubject.next(user); // Asegúrate de actualizar el subject
+    })
+  );
+}
+
+  changePassword(request: ChangePasswordRequest): Observable<AuthResponse> {
+    return this.http.post<AuthResponse>(`${this.apiUrl}/auth/change-password`, request);
+  }
+
+  isAuthenticated(): boolean {
+    return !!localStorage.getItem('token');
+  }
+}

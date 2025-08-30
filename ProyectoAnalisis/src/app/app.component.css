@@ -1,0 +1,15 @@
+/* src/app/app.component.css */
+.app-container {
+  display: flex;
+  flex-direction: column;
+}
+
+.content {
+  flex: 1;
+  padding: 20px;
+}
+
+.header-actions {
+  text-align: right;
+  margin-bottom: 20px;
+}

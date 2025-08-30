@@ -1,0 +1,29 @@
+<!-- src/app/components/menu/menu.component.html -->
+<nav class="navbar">
+  <ul class="nav-list">
+    <li class="nav-item dropdown" *ngFor="let menu of menus">
+      <span class="dropbtn">{{menu.nombre}}</span>
+      <ul class="dropdown-content">
+        <li *ngFor="let menuItem of menu.menus">
+          <ul>
+            <li *ngFor="let opcion of menuItem.opciones">
+              <a (click)="navigateTo(opcion.pagina)" *ngIf="opcion.pagina">{{opcion.nombre}}</a>
+              <span *ngIf="!opcion.pagina">{{opcion.nombre}}</span>
+              <span *ngIf="opcion.alta"> (Alta)</span>
+              <span *ngIf="opcion.baja"> (Baja)</span>
+              <span *ngIf="opcion.cambio"> (Cambio)</span>
+              <span *ngIf="opcion.imprimir"> (Imprimir)</span>
+              <span *ngIf="opcion.exportar"> (Exportar)</span>
+            </li>
+          </ul>
+        </li>
+      </ul>
+    </li>
+    <li class="nav-item right">
+      <button (click)="navigateToProfile()">Mi Perfil</button>
+    </li>
+    <li class="nav-item right">
+      <button (click)="logout()">Cerrar Sesión</button>
+    </li>
+  </ul>
+</nav>

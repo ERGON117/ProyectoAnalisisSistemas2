@@ -1,0 +1,16 @@
+<!-- src/app/components/login/login.component.html -->
+<div class="container">
+  <h2>Iniciar Sesión</h2>
+  <form (ngSubmit)="onSubmit()">
+    <div class="form-group" [class.error]="!loginRequest.username && missingFields.length > 0">
+      <label>Correo Electrónico</label>
+      <input type="email" [(ngModel)]="loginRequest.username" name="username" required>
+    </div>
+    <div class="form-group" [class.error]="!loginRequest.password && missingFields.length > 0">
+      <label>Contraseña</label>
+      <input type="password" [(ngModel)]="loginRequest.password" name="password" required>
+    </div>
+    <div class="error" *ngIf="errorMessage">{{errorMessage}}</div>
+    <button type="submit">Iniciar Sesión</button>
+  </form>
+</div>
