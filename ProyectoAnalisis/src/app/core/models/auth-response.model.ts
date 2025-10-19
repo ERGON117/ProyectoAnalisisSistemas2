@@ -3,4 +3,6 @@ export interface AuthResponse {
   success: boolean;
   mensaje: string;
   token?: string;
+  requiereCambioPassword?: boolean;
+
 }

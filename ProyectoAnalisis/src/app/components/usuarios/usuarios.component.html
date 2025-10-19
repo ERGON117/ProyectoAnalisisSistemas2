@@ -1,0 +1,171 @@
+<!-- src/app/components/usuarios/usuarios.component.html -->
+<div class="container my-5">
+  <h2 class="mb-4 text-primary fw-bold">Gestión de Usuarios</h2>
+  <div *ngIf="opcion; else noOpcion">
+    <div class="alert alert-danger alert-dismissible fade show" *ngIf="errorMessage" role="alert">
+      {{errorMessage}}
+      <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+    </div>
+
+    <!-- Botones para imprimir y exportar -->
+    <div class="d-flex justify-content-end mb-4">
+      <button *ngIf="opcion.imprimir" class="btn btn-outline-primary me-2" (click)="print()">
+        <i class="bi bi-printer me-1"></i> Imprimir
+      </button>
+      <button *ngIf="opcion.exportar" class="btn btn-outline-success" (click)="exportData()">
+        <i class="bi bi-file-earmark-spreadsheet me-1"></i> Exportar a CSV
+      </button>
+    </div>
+
+    <!-- Tabla de usuarios -->
+    <div class="card shadow-sm border-0">
+      <div class="card-body p-0">
+        <div class="table-responsive">
+          <table class="table table-hover table-bordered mb-0">
+            <thead class="table-dark">
+              <tr>
+                <th scope="col">ID Usuario</th>
+                <th scope="col">Nombre</th>
+                <th scope="col">Apellido</th>
+                <th scope="col">Correo</th>
+                <th scope="col">Sucursal</th>
+                <th scope="col">Rol</th>
+                <th scope="col">Estado</th>
+                <th scope="col">Género</th>
+                <th scope="col">Fecha Nacimiento</th>
+                <th scope="col">Teléfono</th>
+                <th scope="col" *ngIf="opcion.cambio || opcion.baja">Acciones</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr *ngFor="let item of items">
+                <td>{{item.idUsuario}}</td>
+                <td>{{item.nombre}}</td>
+                <td>{{item.apellido}}</td>
+                <td>{{item.correoElectronico}}</td>
+                <td>{{item.sucursal?.nombre || 'Sin sucursal'}}</td>
+                <td>{{item.role?.nombre || 'Sin rol'}}</td>
+                <td>{{item.statusUsuario?.nombre || 'Sin estado'}}</td>
+                <td>{{item.genero?.nombre || 'Sin género'}}</td>
+                <td>{{item.fechaNacimiento}}</td>
+                <td>{{item.telefonoMovil}}</td>
+                <td *ngIf="opcion.cambio || opcion.baja" class="text-center">
+                  <div class="btn-group" role="group">
+                    <button *ngIf="opcion.cambio" class="btn btn-outline-warning btn-sm me-1" (click)="editItem(item)">
+                      <i class="bi bi-pencil-square me-1"></i> Modificar
+                    </button>
+                    <button *ngIf="opcion.baja" class="btn btn-outline-danger btn-sm" (click)="deleteItem(item.idUsuario)">
+                      <i class="bi bi-trash me-1"></i> Eliminar
+                    </button>
+                  </div>
+                </td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+
+    <!-- Formulario unificado para alta y cambio -->
+    <div *ngIf="opcion.alta || opcion.cambio" class="card shadow-sm border-0 mt-4">
+      <div class="card-header bg-primary text-white">
+        <h3 class="mb-0">{{ isEdit ? 'Modificar Usuario' : 'Alta de Usuario' }}</h3>
+      </div>
+      <div class="card-body">
+        <form (ngSubmit)="submitForm()">
+          <div class="row g-3">
+            <div class="col-md-6">
+              <div class="mb-3">
+                <label for="idUsuario" class="form-label fw-bold">ID Usuario</label>
+                <input type="text" class="form-control" id="idUsuario" [(ngModel)]="formItem.idUsuario" name="idUsuario" [readonly]="isEdit" required>
+              </div>
+              <div class="mb-3">
+                <label for="nombre" class="form-label fw-bold">Nombre</label>
+                <input type="text" class="form-control" id="nombre" [(ngModel)]="formItem.nombre" name="nombre" required>
+              </div>
+              <div class="mb-3">
+                <label for="apellido" class="form-label fw-bold">Apellido</label>
+                <input type="text" class="form-control" id="apellido" [(ngModel)]="formItem.apellido" name="apellido" required>
+              </div>
+              <div class="mb-3">
+                <label for="correoElectronico" class="form-label fw-bold">Correo Electrónico</label>
+                <input type="email" class="form-control" id="correoElectronico" [(ngModel)]="formItem.correoElectronico" name="correoElectronico" required>
+              </div>
+              <div *ngIf="!isEdit" class="mb-3">
+                <label for="password" class="form-label fw-bold">Contraseña</label>
+                <input type="password" class="form-control" id="password" [(ngModel)]="formItem.password" name="password" required>
+              </div>
+              <div class="mb-3">
+                <label for="pregunta" class="form-label fw-bold">Pregunta</label>
+                <input type="text" class="form-control" id="pregunta" [(ngModel)]="formItem.pregunta" name="pregunta" required>
+              </div>
+            </div>
+            <div class="col-md-6">
+              <div class="mb-3">
+                <label for="sucursalId" class="form-label fw-bold">Sucursal</label>
+                <select class="form-select" id="sucursalId" [(ngModel)]="formItem.sucursal.idSucursal" name="sucursalId" required>
+                  <option value="">Selecciona una sucursal</option>
+                  <option *ngFor="let sucursal of sucursales" [value]="sucursal.idSucursal">
+                    {{sucursal.nombre}}
+                  </option>
+                </select>
+              </div>
+              <div class="mb-3">
+                <label for="roleId" class="form-label fw-bold">Rol</label>
+                <select class="form-select" id="roleId" [(ngModel)]="formItem.role.idRole" name="roleId" required>
+                  <option value="">Selecciona un rol</option>
+                  <option *ngFor="let role of roles" [value]="role.idRole">
+                    {{role.nombre}}
+                  </option>
+                </select>
+              </div>
+              <div class="mb-3">
+                <label for="statusUsuarioId" class="form-label fw-bold">Estado</label>
+                <select class="form-select" id="statusUsuarioId" [(ngModel)]="formItem.statusUsuario.idStatusUsuario" name="statusUsuarioId" required>
+                  <option value="">Selecciona un estado</option>
+                  <option *ngFor="let status of statusUsuarios" [value]="status.idStatusUsuario">
+                    {{status.nombre}}
+                  </option>
+                </select>
+              </div>
+              <div class="mb-3">
+                <label for="generoId" class="form-label fw-bold">Género</label>
+                <select class="form-select" id="generoId" [(ngModel)]="formItem.genero.idGenero" name="generoId" required>
+                  <option value="">Selecciona un género</option>
+                  <option *ngFor="let genero of generos" [value]="genero.idGenero">
+                    {{genero.nombre}}
+                  </option>
+                </select>
+              </div>
+              <div class="mb-3">
+                <label for="fechaNacimiento" class="form-label fw-bold">Fecha Nacimiento</label>
+                <input type="date" class="form-control" id="fechaNacimiento" [(ngModel)]="formItem.fechaNacimiento" name="fechaNacimiento" required>
+              </div>
+              <div class="mb-3">
+                <label for="telefonoMovil" class="form-label fw-bold">Teléfono Móvil</label>
+                <input type="text" class="form-control" id="telefonoMovil" [(ngModel)]="formItem.telefonoMovil" name="telefonoMovil" required>
+              </div>
+              <div class="mb-3">
+                <label for="respuesta" class="form-label fw-bold">Respuesta</label>
+                <input type="text" class="form-control" id="respuesta" [(ngModel)]="formItem.respuesta" name="respuesta" required>
+              </div>
+            </div>
+          </div>
+          <div class="d-flex justify-content-end mt-3">
+            <button type="submit" class="btn btn-primary me-2">
+              <i class="bi bi-save me-1"></i> {{ isEdit ? 'Actualizar' : 'Agregar' }}
+            </button>
+            <button type="button" class="btn btn-outline-secondary" (click)="resetForm()">
+              <i class="bi bi-x-circle me-1"></i> Cancelar
+            </button>
+          </div>
+        </form>
+      </div>
+    </div>
+  </div>
+  <ng-template #noOpcion>
+    <div class="alert alert-warning mt-4" role="alert">
+      No tienes permisos para esta sección.
+    </div>
+  </ng-template>
+</div>

@@ -1,0 +1,174 @@
+<!-- src/app/components/gestion-personas/gestion-personas.component.html -->
+<div class="container my-5">
+  <h2 class="mb-4 text-primary fw-bold">Gestión de Personas</h2>
+  <div *ngIf="opcion; else noOpcion">
+    <div class="alert alert-danger alert-dismissible fade show" *ngIf="errorMessage" role="alert">
+      {{errorMessage}}
+      <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+    </div>
+
+    <!-- Botones para imprimir y exportar -->
+    <div class="d-flex justify-content-end mb-4">
+      <button *ngIf="opcion.imprimir" class="btn btn-outline-primary me-2" (click)="print()">
+        <i class="bi bi-printer me-1"></i> Imprimir
+      </button>
+      <button *ngIf="opcion.exportar" class="btn btn-outline-success" (click)="exportData()">
+        <i class="bi bi-file-earmark-spreadsheet me-1"></i> Exportar a CSV
+      </button>
+    </div>
+
+    <!-- Tabla de personas -->
+    <div class="card shadow-sm border-0">
+      <div class="card-body p-0">
+        <div class="table-responsive">
+          <table class="table table-hover table-bordered mb-0">
+            <thead class="table-dark">
+              <tr>
+                <th scope="col">ID Persona</th>
+                <th scope="col">Nombre Completo</th>
+                <th scope="col">Correo Electrónico</th>
+                <th scope="col">Teléfono</th>
+                <th scope="col">Género</th>
+                <th scope="col">Estado Civil</th>
+                <th scope="col">Fecha Nacimiento</th>
+                <th scope="col" *ngIf="opcion.cambio || opcion.baja">Acciones</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr *ngFor="let item of items">
+                <td>{{item.idPersona}}</td>
+                <td>{{item.nombre}} {{item.apellido}}</td>
+                <td>{{item.correoElectronico}}</td>
+                <td>{{item.telefono}}</td>
+                <td>{{item.genero?.nombre}}</td>
+                <td>{{item.estadoCivil?.nombre}}</td>
+                <td>{{item.fechaNacimiento | date:'short'}}</td>
+                <td *ngIf="opcion.cambio || opcion.baja" class="text-center">
+                  <div class="btn-group" role="group">
+                    <button *ngIf="opcion.cambio" class="btn btn-outline-warning btn-sm me-1" (click)="editItem(item)">
+                      <i class="bi bi-pencil-square me-1"></i> Modificar
+                    </button>
+                    <button *ngIf="opcion.baja" class="btn btn-outline-danger btn-sm" (click)="deleteItem(item.idPersona)">
+                      <i class="bi bi-trash me-1"></i> Eliminar
+                    </button>
+                  </div>
+                </td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+
+    <!-- Formulario unificado para alta y cambio -->
+    <div *ngIf="opcion.alta || opcion.cambio" class="card shadow-sm border-0 mt-4">
+      <div class="card-header bg-primary text-white">
+        <h3 class="mb-0">{{ isEdit ? 'Modificar Persona' : 'Alta de Persona' }}</h3>
+      </div>
+      <div class="card-body">
+        <form (ngSubmit)="submitForm()">
+          <div class="row g-3">
+            <div class="col-md-6">
+              <div class="mb-3" *ngIf="isEdit">
+                <label for="idPersona" class="form-label fw-bold">ID Persona</label>
+                <input type="text" class="form-control" id="idPersona" [(ngModel)]="formItem.idPersona" name="idPersona" readonly required>
+              </div>
+              <div class="mb-3">
+                <label for="nombre" class="form-label fw-bold">Nombre *</label>
+                <input type="text" class="form-control" id="nombre" [(ngModel)]="formItem.nombre" name="nombre" required>
+              </div>
+              <div class="mb-3">
+                <label for="apellido" class="form-label fw-bold">Apellido *</label>
+                <input type="text" class="form-control" id="apellido" [(ngModel)]="formItem.apellido" name="apellido" required>
+              </div>
+              <div class="mb-3">
+                <label for="fechaNacimiento" class="form-label fw-bold">Fecha Nacimiento *</label>
+                <input type="date" class="form-control" id="fechaNacimiento" [(ngModel)]="formItem.fechaNacimiento" name="fechaNacimiento" required>
+              </div>
+              <div class="mb-3">
+                <label for="idGenero" class="form-label fw-bold">Género *</label>
+                <select class="form-select" id="idGenero" [(ngModel)]="formItem.idGenero" name="idGenero" required>
+                  <option value="">Seleccionar género</option>
+                  <option *ngFor="let genero of generos" [value]="genero.idGenero">{{genero.nombre}}</option>
+                </select>
+              </div>
+              <div class="mb-3">
+                <label for="direccion" class="form-label fw-bold">Dirección</label>
+                <textarea class="form-control" id="direccion" rows="2" [(ngModel)]="formItem.direccion" name="direccion"></textarea>
+              </div>
+            </div>
+            <div class="col-md-6">
+              <div class="mb-3">
+                <label for="telefono" class="form-label fw-bold">Teléfono</label>
+                <input type="text" class="form-control" id="telefono" [(ngModel)]="formItem.telefono" name="telefono">
+              </div>
+              <div class="mb-3">
+                <label for="correoElectronico" class="form-label fw-bold">Correo Electrónico *</label>
+                <input type="email" class="form-control" id="correoElectronico" [(ngModel)]="formItem.correoElectronico" name="correoElectronico" required>
+              </div>
+              <div class="mb-3">
+                <label for="idEstadoCivil" class="form-label fw-bold">Estado Civil *</label>
+                <select class="form-select" id="idEstadoCivil" [(ngModel)]="formItem.idEstadoCivil" name="idEstadoCivil" required>
+                  <option value="">Seleccionar estado civil</option>
+                  <option *ngFor="let ec of estadosCiviles" [value]="ec.idEstadoCivil">{{ec.nombre}}</option>
+                </select>
+              </div>
+            </div>
+          </div>
+
+          <!-- Gestión de Documentos - SOLO SI HAY DATOS DE PERSONA -->
+          <div *ngIf="hasPersonaData()" class="mt-4">
+            <div class="card shadow-sm border-0 mb-3">
+              <div class="card-header bg-info text-white">
+                <h5 class="mb-0"><i class="bi bi-card-text me-2"></i>Documentos de Identificación</h5>
+              </div>
+              <div class="card-body">
+                <div *ngFor="let doc of documentos; let i = index" class="row g-3 mb-2 p-3 border rounded bg-light">
+                  <div class="col-md-4">
+                    <label class="form-label fw-bold">Tipo Documento *</label>
+                    <select class="form-select" [(ngModel)]="doc.idTipoDocumento" [name]="'idTipoDocumento_' + i" required>
+                      <option value="">Seleccionar tipo</option>
+                      <option *ngFor="let tipo of tiposDocumento" [value]="tipo.idTipoDocumento">{{tipo.nombre}}</option>
+                    </select>
+                  </div>
+                  <div class="col-md-6">
+                    <label class="form-label fw-bold">Número Documento *</label>
+                    <input type="text" class="form-control" [(ngModel)]="doc.noDocumento" [name]="'noDocumento_' + i" required>
+                  </div>
+                  <div class="col-md-2 d-flex align-items-end">
+                    <button type="button" class="btn btn-outline-danger" (click)="eliminarDocumento(i)">
+                      <i class="bi bi-trash"></i>
+                    </button>
+                  </div>
+                </div>
+                <button type="button" class="btn btn-outline-primary" (click)="agregarDocumento()">
+                  <i class="bi bi-plus-circle me-1"></i> Agregar Documento
+                </button>
+              </div>
+            </div>
+          </div>
+
+          <!-- Mensaje para completar datos de persona primero -->
+          <div *ngIf="!hasPersonaData() && (opcion.alta || opcion.cambio)" class="alert alert-warning mt-4">
+            <i class="bi bi-exclamation-triangle me-2"></i>
+            Complete el formulario anterior para poder agregar documentos.
+          </div>
+
+          <div class="d-flex justify-content-end mt-3">
+            <button type="submit" class="btn btn-primary me-2" [disabled]="!hasBasicPersonaData()">
+              <i class="bi bi-save me-1"></i> {{ isEdit ? 'Actualizar' : 'Agregar' }}
+            </button>
+            <button type="button" class="btn btn-outline-secondary" (click)="resetForm()">
+              <i class="bi bi-x-circle me-1"></i> Cancelar
+            </button>
+          </div>
+        </form>
+      </div>
+    </div>
+  </div>
+  <ng-template #noOpcion>
+    <div class="alert alert-warning mt-4" role="alert">
+      No tienes permisos para esta sección.
+    </div>
+  </ng-template>
+</div>

@@ -1,0 +1,163 @@
+<div class="container my-5">
+  <h2 class="mb-4 text-primary fw-bold">Consulta de Saldos</h2>
+
+  <div *ngIf="opcion; else noOpcion">
+    <!-- Mensaje de error -->
+    <div class="alert alert-danger alert-dismissible fade show" *ngIf="errorMessage" role="alert">
+      {{errorMessage}}
+      <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close" (click)="errorMessage=''"></button>
+    </div>
+
+    <!-- Formulario de búsqueda -->
+    <div class="card shadow-sm border-0 mb-4">
+      <div class="card-header bg-primary text-white">
+        <h5 class="mb-0"><i class="bi bi-search me-2"></i> Criterios de Búsqueda</h5>
+      </div>
+      <div class="card-body">
+        <div class="row g-3">
+          <!-- Combobox para seleccionar tipo de consulta -->
+          <div class="col-md-4">
+            <label for="tipoConsulta" class="form-label fw-bold">Tipo de Consulta</label>
+            <select class="form-select" id="tipoConsulta"
+                    [(ngModel)]="tipoConsulta"
+                    name="tipoConsulta"
+                    (change)="onTipoConsultaChange()">
+              <option *ngFor="let opcion of opcionesConsulta" [value]="opcion.value">
+                {{opcion.label}}
+              </option>
+            </select>
+          </div>
+
+          <!-- Campos dinámicos según tipo de consulta -->
+          <div class="col-md-4" *ngIf="tipoConsulta === 'idPersona'">
+            <label for="idPersona" class="form-label fw-bold">ID Persona</label>
+            <input type="number" class="form-control" id="idPersona"
+                   [(ngModel)]="searchForm.idPersona" name="idPersona"
+                   [class.is-invalid]="errorMessage && tipoConsulta === 'idPersona'">
+            <div class="form-text">Ingrese el ID de la persona para consultar sus saldos</div>
+          </div>
+
+          <div class="col-md-4" *ngIf="tipoConsulta === 'idSaldoCuenta'">
+            <label for="idSaldoCuenta" class="form-label fw-bold">ID Saldo Cuenta</label>
+            <input type="number" class="form-control" id="idSaldoCuenta"
+                   [(ngModel)]="searchForm.idSaldoCuenta" name="idSaldoCuenta"
+                   [class.is-invalid]="errorMessage && tipoConsulta === 'idSaldoCuenta'">
+            <div class="form-text">Ingrese el ID específico de la cuenta de saldo</div>
+          </div>
+
+          <div class="col-md-4" *ngIf="tipoConsulta === 'nombreApellido'">
+            <label for="nombre" class="form-label fw-bold">Nombre</label>
+            <input type="text" class="form-control" id="nombre"
+                   [(ngModel)]="searchForm.nombre" name="nombre"
+                   [class.is-invalid]="errorMessage && tipoConsulta === 'nombreApellido'">
+          </div>
+
+          <div class="col-md-4" *ngIf="tipoConsulta === 'nombreApellido'">
+            <label for="apellido" class="form-label fw-bold">Apellido</label>
+            <input type="text" class="form-control" id="apellido"
+                   [(ngModel)]="searchForm.apellido" name="apellido"
+                   [class.is-invalid]="errorMessage && tipoConsulta === 'nombreApellido'">
+            <div class="form-text">Ambos campos son requeridos para la búsqueda</div>
+          </div>
+        </div>
+
+        <div class="d-flex justify-content-end mt-3">
+          <button class="btn btn-primary me-2" (click)="buscarSaldos()"
+                  [disabled]="loading">
+            <span *ngIf="loading" class="spinner-border spinner-border-sm me-2"></span>
+            <i class="bi bi-search me-1" *ngIf="!loading"></i>
+            Buscar Saldos
+          </button>
+          <button class="btn btn-outline-secondary" (click)="limpiarBusqueda()"
+                  [disabled]="loading">
+            <i class="bi bi-arrow-clockwise me-1"></i>Limpiar
+          </button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Botones para imprimir y exportar (solo si hay datos) -->
+    <div class="d-flex justify-content-end mb-4" *ngIf="saldos.length > 0">
+      <button *ngIf="opcion?.imprimir" class="btn btn-outline-primary me-2" (click)="print()">
+        <i class="bi bi-printer me-1"></i> Imprimir
+      </button>
+      <button *ngIf="opcion?.exportar" class="btn btn-outline-success" (click)="exportData()">
+        <i class="bi bi-file-earmark-spreadsheet me-1"></i> Exportar a CSV
+      </button>
+    </div>
+
+    <!-- Tabla de resultados -->
+    <div class="card shadow-sm border-0" *ngIf="saldos.length > 0">
+      <div class="card-header bg-success text-white d-flex justify-content-between align-items-center">
+        <h5 class="mb-0">
+          <i class="bi bi-list-ul me-2"></i>
+          Resultados - {{labelTipoConsulta}} ({{saldos.length}} registros)
+        </h5>
+        <div class="text-end">
+          <strong>Total Saldo Final: {{formatCurrency(getTotalSaldoFinal())}}</strong>
+        </div>
+      </div>
+      <div class="card-body p-0">
+        <div class="table-responsive">
+          <table class="table table-hover table-bordered mb-0">
+            <thead class="table-dark">
+              <tr>
+                <th scope="col">ID Saldo</th>
+                <th scope="col">Persona</th>
+                <th scope="col">Tipo Saldo</th>
+                <th scope="col">Status</th>
+                <th scope="col" class="text-end">Saldo Inicial</th>
+                <th scope="col" class="text-end">Cargos</th>
+                <th scope="col" class="text-end">Abonos</th>
+                <th scope="col" class="text-end fw-bold">Saldo Final</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr *ngFor="let saldo of saldos">
+                <td>
+                  <strong>{{saldo.idSaldoCuenta}}</strong>
+                </td>
+                <td>
+                  <div>{{saldo.nombrePersona}} {{saldo.apellidoPersona}}</div>
+                  <small class="text-muted">ID: {{saldo.idPersona}}</small>
+                </td>
+                <td>{{saldo.nombreTipo}}</td>
+                <td>
+                  <span class="badge bg-info">{{saldo.nombreStatus}}</span>
+                </td>
+                <td class="text-end">{{formatCurrency(saldo.saldoInicial)}}</td>
+                <td class="text-end text-danger fw-bold">{{formatCurrency(saldo.cargos)}}</td>
+                <td class="text-end text-success fw-bold">{{formatCurrency(saldo.abonos)}}</td>
+                <td class="text-end">
+                  <span [ngClass]="{'text-success': saldo.saldoFinal >= 0, 'text-danger': saldo.saldoFinal < 0}">
+                    {{formatCurrency(saldo.saldoFinal)}}
+                  </span>
+                </td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+
+    <!-- Mensaje cuando no hay resultados -->
+    <div class="alert alert-info" *ngIf="saldos.length === 0 && !loading && !errorMessage">
+      <i class="bi bi-info-circle me-2"></i>
+      Seleccione un tipo de consulta e ingrese los datos para buscar saldos.
+    </div>
+
+    <!-- Loading -->
+    <div *ngIf="loading" class="text-center py-4">
+      <div class="spinner-border text-primary" role="status">
+        <span class="visually-hidden">Cargando...</span>
+      </div>
+      <p class="mt-2">Consultando saldos...</p>
+    </div>
+  </div>
+
+  <ng-template #noOpcion>
+    <div class="alert alert-warning mt-4" role="alert">
+      <i class="bi bi-exclamation-triangle me-2"></i>No tienes permisos para esta sección.
+    </div>
+  </ng-template>
+</div>

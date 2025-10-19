@@ -1,0 +1,89 @@
+<!-- src/app/components/estado-civil/estado-civil.component.html -->
+<div class="container my-5">
+  <h2 class="mb-4 text-primary fw-bold">Gestión de Estados Civiles</h2>
+  <div *ngIf="opcion; else noOpcion">
+    <div class="alert alert-danger alert-dismissible fade show" *ngIf="errorMessage" role="alert">
+      {{errorMessage}}
+      <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+    </div>
+
+    <!-- Botones para imprimir y exportar -->
+    <div class="d-flex justify-content-end mb-4">
+      <button *ngIf="opcion.imprimir" class="btn btn-outline-primary me-2" (click)="print()">
+        <i class="bi bi-printer me-1"></i> Imprimir
+      </button>
+      <button *ngIf="opcion.exportar" class="btn btn-outline-success" (click)="exportData()">
+        <i class="bi bi-file-earmark-spreadsheet me-1"></i> Exportar a CSV
+      </button>
+    </div>
+
+    <!-- Tabla de estados civiles -->
+    <div class="card shadow-sm border-0">
+      <div class="card-body p-0">
+        <div class="table-responsive">
+          <table class="table table-hover table-bordered mb-0">
+            <thead class="table-dark">
+              <tr>
+                <th scope="col">ID Estado Civil</th>
+                <th scope="col">Nombre</th>
+                <th scope="col" *ngIf="opcion.cambio || opcion.baja">Acciones</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr *ngFor="let item of items">
+                <td>{{item.idEstadoCivil}}</td>
+                <td>{{item.nombre}}</td>
+                <td *ngIf="opcion.cambio || opcion.baja" class="text-center">
+                  <div class="btn-group" role="group">
+                    <button *ngIf="opcion.cambio" class="btn btn-outline-warning btn-sm me-1" (click)="editItem(item)">
+                      <i class="bi bi-pencil-square me-1"></i> Modificar
+                    </button>
+                    <button *ngIf="opcion.baja" class="btn btn-outline-danger btn-sm" (click)="deleteItem(item.idEstadoCivil)">
+                      <i class="bi bi-trash me-1"></i> Eliminar
+                    </button>
+                  </div>
+                </td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+
+    <!-- Formulario unificado para alta y cambio -->
+    <div *ngIf="opcion.alta || opcion.cambio" class="card shadow-sm border-0 mt-4">
+      <div class="card-header bg-primary text-white">
+        <h3 class="mb-0">{{ isEdit ? 'Modificar Estado Civil' : 'Alta de Estado Civil' }}</h3>
+      </div>
+      <div class="card-body">
+        <form (ngSubmit)="submitForm()">
+          <div class="row g-3">
+            <div class="col-md-6">
+              <div class="mb-3" *ngIf="isEdit">
+                <label for="idEstadoCivil" class="form-label fw-bold">ID Estado Civil</label>
+                <input type="text" class="form-control" id="idEstadoCivil" [(ngModel)]="formItem.idEstadoCivil" name="idEstadoCivil" readonly required>
+              </div>
+              <div class="mb-3">
+                <label for="nombre" class="form-label fw-bold">Nombre *</label>
+                <input type="text" class="form-control" id="nombre" [(ngModel)]="formItem.nombre" name="nombre" required>
+              </div>
+            </div>
+          </div>
+          <div class="d-flex justify-content-end mt-3">
+            <button type="submit" class="btn btn-primary me-2">
+              <i class="bi bi-save me-1"></i> {{ isEdit ? 'Actualizar' : 'Agregar' }}
+            </button>
+            <button type="button" class="btn btn-outline-secondary" (click)="resetForm()">
+              <i class="bi bi-x-circle me-1"></i> Cancelar
+            </button>
+          </div>
+        </form>
+      </div>
+    </div>
+  </div>
+  <ng-template #noOpcion>
+    <div class="alert alert-warning mt-4" role="alert">
+      No tienes permisos para esta sección.
+    </div>
+  </ng-template>
+</div>

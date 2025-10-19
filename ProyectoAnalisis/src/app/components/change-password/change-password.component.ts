@@ -1,5 +1,4 @@
-// src/app/components/change-password/change-password.component.ts
-import { Component } from '@angular/core';
+import { Component, OnInit } from '@angular/core';
 import { AuthService } from '../../core/services/auth.service';
 import { ChangePasswordRequest } from '../../core/models/change-password-request.model';
 import { Router } from '@angular/router';
@@ -9,20 +8,51 @@ import { Router } from '@angular/router';
   templateUrl: './change-password.component.html',
   styleUrls: ['./change-password.component.css']
 })
-export class ChangePasswordComponent {
-  changePasswordRequest: ChangePasswordRequest = { currentPassword: '', newPassword: '' };
+export class ChangePasswordComponent implements OnInit {
+  changePasswordRequest: ChangePasswordRequest = { correoElectronico: '', currentPassword: '', newPassword: '' };
   errorMessage: string = '';
   successMessage: string = '';
+  missingFields: string[] = [];
 
   constructor(private authService: AuthService, private router: Router) {}
 
+  ngOnInit() {
+    // Obtener el correo electrónico almacenado desde el login
+    const email = localStorage.getItem('changePasswordEmail');
+    if (email) {
+      this.changePasswordRequest.correoElectronico = email;
+    }
+  }
+
   onSubmit() {
+    this.missingFields = [];
+    this.errorMessage = '';
+    this.successMessage = '';
+
+    // Validar campos vacíos
+    if (!this.changePasswordRequest.correoElectronico) {
+      this.missingFields.push('Correo Electrónico');
+    }
+    if (!this.changePasswordRequest.currentPassword) {
+      this.missingFields.push('Contraseña Actual');
+    }
+    if (!this.changePasswordRequest.newPassword) {
+      this.missingFields.push('Nueva Contraseña');
+    }
+
+    if (this.missingFields.length > 0) {
+      this.errorMessage = `Por favor, complete los siguientes campos: ${this.missingFields.join(', ')}.`;
+      return;
+    }
+
     this.authService.changePassword(this.changePasswordRequest).subscribe({
       next: (response) => {
         if (response.success) {
           this.successMessage = response.mensaje;
           this.errorMessage = '';
-          setTimeout(() => this.router.navigate(['/profile']), 2000);
+          // Limpiar el correo almacenado
+          localStorage.removeItem('changePasswordEmail');
+          setTimeout(() => this.router.navigate(['/login']), 2000);
         } else {
           this.errorMessage = response.mensaje;
           this.successMessage = '';

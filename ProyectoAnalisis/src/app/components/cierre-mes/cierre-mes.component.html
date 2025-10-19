@@ -1,0 +1,55 @@
+<div class="container my-5">
+  <h2 class="mb-4 text-primary fw-bold">Cierre de Mes</h2>
+
+  <div *ngIf="opcion; else noOpcion">
+    <div *ngIf="mensaje" class="alert alert-success alert-dismissible fade show" role="alert">
+      {{ mensaje }}
+      <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+    </div>
+
+    <div *ngIf="errorMessage" class="alert alert-danger alert-dismissible fade show" role="alert">
+      {{ errorMessage }}
+      <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+    </div>
+
+    <div class="card shadow-sm border-0">
+      <div class="card-header bg-primary text-white">
+        <h3 class="mb-0">Ejecutar Cierre</h3>
+      </div>
+      <div class="card-body">
+        <form (ngSubmit)="cerrarMes()">
+          <div class="row g-3">
+            <div class="col-md-6">
+              <label for="anio" class="form-label fw-bold">Año</label>
+              <input type="number" class="form-control" id="anio" [(ngModel)]="formItem.anio" name="anio" required min="2000" max="2100">
+            </div>
+            <div class="col-md-6">
+              <label for="mes" class="form-label fw-bold">Mes</label>
+              <select id="mes" class="form-select" [(ngModel)]="formItem.mes" name="mes" required>
+                <option *ngFor="let m of [1,2,3,4,5,6,7,8,9,10,11,12]" [value]="m">
+                  {{ m }} - {{ ['Enero','Febrero','Marzo','Abril','Mayo','Junio','Julio','Agosto','Septiembre','Octubre','Noviembre','Diciembre'][m-1] }}
+                </option>
+              </select>
+            </div>
+          </div>
+
+          <div class="d-flex justify-content-end mt-4">
+            <button type="submit" class="btn btn-primary me-2" [disabled]="isProcessing">
+              <i class="bi bi-check-circle me-1"></i>
+              {{ isProcessing ? 'Procesando...' : 'Cerrar Mes' }}
+            </button>
+            <button type="button" class="btn btn-outline-secondary" (click)="resetForm()">
+              <i class="bi bi-x-circle me-1"></i> Cancelar
+            </button>
+          </div>
+        </form>
+      </div>
+    </div>
+  </div>
+
+  <ng-template #noOpcion>
+    <div class="alert alert-warning mt-4" role="alert">
+      No tienes permisos para esta sección.
+    </div>
+  </ng-template>
+</div>

@@ -1,0 +1,142 @@
+<div class="container my-5">
+  <h2 class="mb-4 text-primary fw-bold">Consulta de Estado de Cuenta</h2>
+
+  <div *ngIf="opcion; else noOpcion">
+    <!-- Mensaje de error -->
+    <div *ngIf="errorMessage" class="alert alert-danger alert-dismissible fade show" role="alert">
+      {{ errorMessage }}
+      <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+    </div>
+
+    <!-- 🔹 Formulario -->
+    <div class="card shadow-sm border-0 mb-4">
+      <div class="card-body">
+        <form (ngSubmit)="consultarEstadoCuenta()">
+          <div class="row g-3 align-items-end">
+            <!-- Tipo de búsqueda -->
+            <div class="col-md-3">
+              <label for="tipoBusqueda" class="form-label fw-bold">Buscar por</label>
+              <select id="tipoBusqueda" class="form-select" [(ngModel)]="tipoBusqueda" name="tipoBusqueda">
+                <option value="idPersona">ID Persona</option>
+                <option value="idSaldoCuenta">ID Saldo Cuenta</option>
+                <option value="nombreApellido">Nombre y Apellido</option>
+              </select>
+            </div>
+
+            <!-- Campos dinámicos según tipo de búsqueda -->
+            <div class="col-md-3" *ngIf="tipoBusqueda === 'idPersona'">
+              <label for="idPersona" class="form-label fw-bold">ID Persona</label>
+              <input type="number" class="form-control" id="idPersona" [(ngModel)]="filtros.idPersona" name="idPersona">
+            </div>
+
+            <div class="col-md-3" *ngIf="tipoBusqueda === 'idSaldoCuenta'">
+              <label for="idSaldoCuenta" class="form-label fw-bold">ID Saldo Cuenta</label>
+              <input type="number" class="form-control" id="idSaldoCuenta" [(ngModel)]="filtros.idSaldoCuenta" name="idSaldoCuenta">
+            </div>
+
+            <div class="col-md-3" *ngIf="tipoBusqueda === 'nombreApellido'">
+              <label for="nombre" class="form-label fw-bold">Nombre</label>
+              <input type="text" class="form-control" id="nombre" [(ngModel)]="filtros.nombre" name="nombre">
+            </div>
+
+            <div class="col-md-3" *ngIf="tipoBusqueda === 'nombreApellido'">
+              <label for="apellido" class="form-label fw-bold">Apellido</label>
+              <input type="text" class="form-control" id="apellido" [(ngModel)]="filtros.apellido" name="apellido">
+            </div>
+
+            <!-- Rango de fechas -->
+            <div class="col-md-3">
+              <label for="inicio" class="form-label fw-bold">Inicio</label>
+              <input type="date" class="form-control" id="inicio" [(ngModel)]="filtros.inicio" name="inicio" required>
+            </div>
+
+            <div class="col-md-3">
+              <label for="fin" class="form-label fw-bold">Fin</label>
+              <input type="date" class="form-control" id="fin" [(ngModel)]="filtros.fin" name="fin" required>
+            </div>
+
+            <!-- Botones -->
+            <div class="col-md-6 d-flex justify-content-end mt-3 gap-2">
+              <button type="submit" class="btn btn-primary">
+                <i class="bi bi-search me-1"></i> Consultar
+              </button>
+              <button type="button" class="btn btn-outline-secondary" (click)="limpiar()">
+                <i class="bi bi-x-circle me-1"></i> Limpiar
+              </button>
+            </div>
+          </div>
+        </form>
+      </div>
+    </div>
+
+    <!-- 🔹 Resultado -->
+    <div *ngIf="estadoCuenta" class="card shadow-sm border-0">
+      <div class="card-header bg-primary text-white d-flex justify-content-between align-items-center">
+        <h4 class="mb-0">Estado de Cuenta</h4>
+        <div class="d-flex gap-2">
+          <!-- Botón imprimir -->
+          <button *ngIf="opcion?.imprimir" class="btn btn-outline-primary" (click)="print()">
+            <i class="bi bi-printer me-1"></i> Imprimir
+          </button>
+
+          <!-- Botón PDF -->
+          <button class="btn btn-danger" (click)="exportarPdf()">
+            <i class="bi bi-file-earmark-pdf me-1"></i> PDF
+          </button>
+
+          <!-- Botón Excel -->
+          <button class="btn btn-success" (click)="exportarExcel()">
+            <i class="bi bi-file-earmark-excel me-1"></i> Excel
+          </button>
+        </div>
+      </div>
+
+      <div class="card-body">
+        <div class="mb-4">
+          <h5 class="fw-bold">{{ estadoCuenta.nombreCliente }}</h5>
+          <p class="mb-1"><strong>Número de Cuenta:</strong> {{ estadoCuenta.numeroCuenta }}</p>
+          <p class="mb-1"><strong>Periodo:</strong> {{ estadoCuenta.periodo }}</p>
+        </div>
+
+        <div class="table-responsive">
+          <table class="table table-striped align-middle">
+            <thead class="table-primary">
+              <tr>
+                <th>Fecha</th>
+                <th>Tipo Movimiento</th>
+                <th>Descripción</th>
+                <th class="text-end">Cargo</th>
+                <th class="text-end">Abono</th>
+                <th class="text-end">Saldo Acumulado</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr *ngFor="let mov of estadoCuenta.movimientos">
+                <td>{{ mov.fechaMovimiento | date:'short' }}</td>
+                <td>{{ mov.tipoMovimiento }}</td>
+                <td>{{ mov.descripcion }}</td>
+                <td class="text-end">{{ mov.cargo | number:'1.2-2' }}</td>
+                <td class="text-end">{{ mov.abono | number:'1.2-2' }}</td>
+                <td class="text-end">{{ mov.saldoAcumulado | number:'1.2-2' }}</td>
+              </tr>
+            </tbody>
+            <tfoot class="table-light">
+              <tr>
+                <th colspan="3" class="text-end">Totales:</th>
+                <th class="text-end">{{ estadoCuenta.totalCargos | number:'1.2-2' }}</th>
+                <th class="text-end">{{ estadoCuenta.totalAbonos | number:'1.2-2' }}</th>
+                <th class="text-end">{{ estadoCuenta.saldoFinal | number:'1.2-2' }}</th>
+              </tr>
+            </tfoot>
+          </table>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <ng-template #noOpcion>
+    <div class="alert alert-warning mt-4" role="alert">
+      No tienes permisos para esta sección.
+    </div>
+  </ng-template>
+</div>

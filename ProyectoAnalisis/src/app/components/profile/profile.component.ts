@@ -11,7 +11,7 @@ import { ChangePasswordRequest } from '../../core/models/change-password-request
 })
 export class ProfileComponent implements OnInit {
   user: User | null = null;
-  changePasswordRequest: ChangePasswordRequest = { currentPassword: '', newPassword: '' };
+  changePasswordRequest: ChangePasswordRequest = { correoElectronico: '', currentPassword: '', newPassword: '' };
   errorMessage: string = '';
   successMessage: string = '';
   showPasswordForm: boolean = false;
@@ -27,33 +27,4 @@ ngOnInit() {
   this.authService.getProfile().subscribe(); // Fuerza la carga inicial
 }
 
-  togglePasswordForm() {
-    this.showPasswordForm = !this.showPasswordForm;
-    this.errorMessage = '';
-    this.successMessage = '';
-    this.changePasswordRequest = { currentPassword: '', newPassword: '' };
-  }
-
-  onSubmitPassword() {
-    this.authService.changePassword(this.changePasswordRequest).subscribe({
-      next: (response) => {
-        if (response.success) {
-          this.successMessage = response.mensaje;
-          this.errorMessage = '';
-          this.changePasswordRequest = { currentPassword: '', newPassword: '' };
-          setTimeout(() => {
-            this.showPasswordForm = false;
-            this.successMessage = '';
-          }, 2000);
-        } else {
-          this.errorMessage = response.mensaje;
-          this.successMessage = '';
-        }
-      },
-      error: () => {
-        this.errorMessage = 'Error en el servidor';
-        this.successMessage = '';
-      }
-    });
-  }
 }

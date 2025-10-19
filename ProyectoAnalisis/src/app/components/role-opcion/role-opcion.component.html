@@ -1,0 +1,41 @@
+<!-- src/app/components/asignar-opciones/asignar-opciones.component.html -->
+<div class="container">
+  <h2>Asignar Opciones a Rol</h2>
+
+  <div class="form-group">
+    <label for="roleSelect">Seleccionar Rol:</label>
+    <select id="roleSelect" [(ngModel)]="selectedRole" (change)="onRoleChange()">
+      <option value="">-- Selecciona un rol --</option>
+      <option *ngFor="let role of roles" [value]="role.idRole">{{ role.nombre }}</option>
+    </select>
+  </div>
+
+  <div *ngIf="asignaciones.length > 0 && opciones.length > 0" class="table-container">
+    <table>
+      <thead>
+        <tr>
+          <th>Opción</th>
+          <th>Alta</th>
+          <th>Baja</th>
+          <th>Cambio</th>
+          <th>Imprimir</th>
+          <th>Exportar</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr *ngFor="let asignacion of asignaciones">
+          <td>{{ getOpcionNombre(asignacion.idOpcion) }}</td>
+          <td><input type="checkbox" [(ngModel)]="asignacion.alta"></td>
+          <td><input type="checkbox" [(ngModel)]="asignacion.baja"></td>
+          <td><input type="checkbox" [(ngModel)]="asignacion.cambio"></td>
+          <td><input type="checkbox" [(ngModel)]="asignacion.imprimir"></td>
+          <td><input type="checkbox" [(ngModel)]="asignacion.exportar"></td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+
+  <button (click)="guardarAsignaciones()" [disabled]="!selectedRole || asignaciones.length === 0" class="save-btn">
+    Guardar Asignaciones
+  </button>
+</div>

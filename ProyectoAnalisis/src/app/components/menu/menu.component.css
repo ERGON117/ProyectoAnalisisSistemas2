@@ -1,82 +1,105 @@
-/* src/app/components/menu/menu.component.css */
+/* Cambio: Estilos para la barra de navegación horizontal */
 .navbar {
-  background-color: #f8f9fa;
-  padding: 15px;
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
+  background-color: #007bff;
+  padding: 10px 20px;
+  position: fixed;
+  top: 0;
+  width: 100%;
+  z-index: 1000;
+  box-shadow: 0 2px 5px rgba(0, 0, 0, 0.2);
 }
 
 .nav-list {
-  display: flex;
-  list-style: none;
-  padding: 0;
+  list-style-type: none;
   margin: 0;
-  width: 100%;
+  padding: 0;
+  display: flex;
+  align-items: center;
 }
 
+/* Cambio: Estilos para los elementos principales del menú (módulos, perfil, logout) */
 .nav-item {
-  margin: 0 10px;
   position: relative;
+  margin-right: 20px;
 }
 
-.dropdown .dropbtn {
+.nav-link {
+  color: white;
+  text-decoration: none;
+  padding: 10px 15px;
+  display: block;
   cursor: pointer;
-  padding: 10px;
-  color: #007bff;
+  font-size: 16px;
 }
 
-.dropdown-content {
+.nav-link:hover {
+  background-color: #0056b3;
+  border-radius: 4px;
+}
+
+/* Cambio: Estilos para el menú desplegable de módulos */
+.dropdown {
   display: none;
   position: absolute;
-  background-color: #f9f9f9;
-  min-width: 200px;
-  box-shadow: 0px 8px 16px 0px rgba(0,0,0,0.2);
-  z-index: 1;
-  list-style: none;
+  top: 100%;
+  left: 0;
+  background-color: #ffffff;
+  box-shadow: 0 8px 16px rgba(0, 0, 0, 0.2);
+  list-style-type: none;
   padding: 0;
+  min-width: 200px;
+  border-radius: 4px;
 }
 
-.dropdown:hover .dropdown-content {
+.nav-item:hover .dropdown {
   display: block;
 }
 
-.dropdown-content li {
-  padding: 10px;
+.dropdown-item {
+  position: relative;
 }
 
-.dropdown-content a {
-  color: #007bff;
-  text-decoration: none;
-  cursor: pointer;
-}
-
-.dropdown-content a:hover {
-  text-decoration: underline;
-}
-
-.right {
-  margin-left: auto;
-}
-
-button {
+.dropdown-link {
+  color: #333;
   padding: 10px 15px;
-  background-color: #007bff;
-  color: white;
-  border: none;
+  display: block;
+  text-decoration: none;
+}
+
+.dropdown-link:hover {
+  background-color: #f1f1f1;
+}
+
+/* Cambio: Estilos para el submenú desplegable de opciones */
+.sub-dropdown {
+  display: none;
+  position: absolute;
+  top: 0;
+  left: 100%;
+  background-color: #ffffff;
+  box-shadow: 0 8px 16px rgba(0, 0, 0, 0.2);
+  list-style-type: none;
+  padding: 0;
+  min-width: 200px;
   border-radius: 4px;
+}
+
+.dropdown-item:hover .sub-dropdown {
+  display: block;
+}
+
+.sub-dropdown-item {
+  color: #333;
+  padding: 10px 15px;
+  display: block;
   cursor: pointer;
-  margin-left: 10px;
 }
 
-button:hover {
-  background-color: #0056b3;
+.sub-dropdown-item:hover {
+  background-color: #f1f1f1;
 }
 
-button:last-child {
-  background-color: #dc3545;
-}
-
-button:last-child:hover {
-  background-color: #c82333;
+/* Cambio: Asegurar que el contenido de la página no se superponga con la navbar */
+body {
+  margin-top: 60px; /* Ajustar según la altura de la navbar */
 }

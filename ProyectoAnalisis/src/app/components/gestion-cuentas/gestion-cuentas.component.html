@@ -1,0 +1,205 @@
+<!-- src/app/components/gestion-cuentas/gestion-cuentas.component.html -->
+<div class="container my-5">
+  <h2 class="mb-4 text-primary fw-bold">Gestión de Cuentas</h2>
+  <div *ngIf="opcion; else noOpcion">
+    <div class="alert alert-danger alert-dismissible fade show" *ngIf="errorMessage" role="alert">
+      {{errorMessage}}
+      <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+    </div>
+
+    <!-- Botones para imprimir y exportar -->
+    <div class="d-flex justify-content-end mb-4">
+      <button *ngIf="opcion.imprimir" class="btn btn-outline-primary me-2" (click)="print()">
+        <i class="bi bi-printer me-1"></i> Imprimir
+      </button>
+      <button *ngIf="opcion.exportar" class="btn btn-outline-success" (click)="exportData()">
+        <i class="bi bi-file-earmark-spreadsheet me-1"></i> Exportar a CSV
+      </button>
+    </div>
+
+    <!-- Tabla de cuentas -->
+    <div class="card shadow-sm border-0">
+      <div class="card-body p-0">
+        <div class="table-responsive">
+          <table class="table table-hover table-bordered mb-0">
+            <thead class="table-dark">
+              <tr>
+                <th scope="col">ID Cuenta</th>
+                <th scope="col">Persona</th>
+                <th scope="col">Status Cuenta</th>
+                <th scope="col">Tipo Saldo</th>
+                <th scope="col" class="text-end">Saldo Anterior</th>
+                <th scope="col" class="text-end">Débitos</th>
+                <th scope="col" class="text-end">Créditos</th>
+                <th scope="col" class="text-end">Saldo Actual</th>
+                <th scope="col" *ngIf="opcion.cambio || opcion.baja">Acciones</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr *ngFor="let item of items">
+                <td>{{item.idSaldoCuenta}}</td>
+                <td>
+                  <div>
+                    <strong>{{getPersonaNombre(item.persona.idPersona)}}</strong>
+                    <br><small class="text-muted">{{item.persona.correoElectronico}}</small>
+                  </div>
+                </td>
+                <td>
+                  <!-- ✅ CAMBIO 1: Color de texto negro en badges de status -->
+                  <span class="badge text-dark" [ngClass]="{
+                    'bg-success': item.statusCuenta.nombre === 'Activa',
+                    'bg-warning': item.statusCuenta.nombre === 'Inactiva',
+                    'bg-danger': item.statusCuenta.nombre === 'Bloqueada' || item.statusCuenta.nombre === 'Suspendida'
+                  }">
+                    {{item.statusCuenta.nombre}}
+                  </span>
+                </td>
+                <td>{{item.tipoSaldoCuenta.nombre}}</td>
+                <td class="text-end">{{item.saldoAnterior | currency:'USD':'symbol':'1.2-2'}}</td>
+                <td class="text-danger fw-bold text-end">
+                  {{item.debitos | currency:'USD':'symbol':'1.2-2'}}
+                </td>
+                <td class="text-success fw-bold text-end">
+                  {{item.creditos | currency:'USD':'symbol':'1.2-2'}}
+                </td>
+                <td class="fw-bold text-end">
+                  <span [ngClass]="{
+                    'text-success': getSaldoActualItem(item) >= 0,
+                    'text-danger': getSaldoActualItem(item) < 0
+                  }">
+                    {{getSaldoActualItem(item) | currency:'USD':'symbol':'1.2-2'}}
+                  </span>
+                </td>
+                <td *ngIf="opcion.cambio || opcion.baja" class="text-center">
+                  <div class="btn-group" role="group">
+                    <!-- ✅ CAMBIO 2: Limpiar formulario después de modificar exitosamente -->
+                    <button *ngIf="opcion.cambio"
+                            class="btn btn-outline-warning btn-sm me-1"
+                            (click)="editItem(item)">
+                      <i class="bi bi-pencil-square me-1"></i> Modificar
+                    </button>
+                    <button *ngIf="opcion.baja"
+                            class="btn btn-outline-danger btn-sm"
+                            (click)="deleteItem(item.idSaldoCuenta)">
+                      <i class="bi bi-trash me-1"></i> Eliminar
+                    </button>
+                  </div>
+                </td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+
+    <!-- Formulario unificado para alta y cambio -->
+    <div *ngIf="opcion.alta || opcion.cambio" class="card shadow-sm border-0 mt-4">
+      <div class="card-header bg-primary text-white">
+        <h3 class="mb-0">{{ isEdit ? 'Modificar Cuenta' : 'Alta de Cuenta' }}</h3>
+      </div>
+      <div class="card-body">
+        <form (ngSubmit)="submitForm()">
+          <div class="row g-3">
+            <div class="col-md-6">
+              <div class="mb-3" *ngIf="isEdit">
+                <label for="idSaldoCuenta" class="form-label fw-bold">ID Cuenta</label>
+                <input type="text" class="form-control bg-light" id="idSaldoCuenta" [value]="formItem.idSaldoCuenta" readonly>
+              </div>
+              <div class="mb-3">
+                <label for="idPersona" class="form-label fw-bold">Persona *</label>
+                <select class="form-select" id="idPersona" [(ngModel)]="formItem.idPersona" name="idPersona" (change)="onPersonaChange()" required>
+                  <option value="0">Seleccionar persona</option>
+                  <option *ngFor="let persona of personas" [value]="persona.idPersona">
+                    {{persona.nombre}} {{persona.apellido}} - {{persona.correoElectronico}}
+                  </option>
+                </select>
+              </div>
+              <div class="mb-3">
+                <label for="idStatusCuenta" class="form-label fw-bold">Status Cuenta *</label>
+                <select class="form-select" id="idStatusCuenta" [(ngModel)]="formItem.idStatusCuenta" name="idStatusCuenta" required>
+                  <option value="0">Seleccionar status</option>
+                  <option *ngFor="let status of statusCuentas" [value]="status.idStatusCuenta">
+                    {{status.nombre}}
+                  </option>
+                </select>
+              </div>
+              <div class="mb-3">
+                <label for="idTipoSaldoCuenta" class="form-label fw-bold">Tipo Saldo *</label>
+                <select class="form-select" id="idTipoSaldoCuenta" [(ngModel)]="formItem.idTipoSaldoCuenta" name="idTipoSaldoCuenta" required>
+                  <option value="0">Seleccionar tipo</option>
+                  <option *ngFor="let tipo of tiposSaldoCuentas" [value]="tipo.idTipoSaldoCuenta">
+                    {{tipo.nombre}}
+                  </option>
+                </select>
+              </div>
+            </div>
+            <div class="col-md-6">
+              <div class="mb-3">
+                <label for="saldoAnterior" class="form-label fw-bold">Saldo Anterior</label>
+                <input type="number" class="form-control" id="saldoAnterior" [(ngModel)]="formItem.saldoAnterior" name="saldoAnterior" step="0.01" (input)="onSaldoChange()">
+              </div>
+              <div class="mb-3">
+                <label for="debitos" class="form-label fw-bold">Débitos</label>
+                <input type="number" class="form-control" id="debitos" [(ngModel)]="formItem.debitos" name="debitos" step="0.01" (input)="onSaldoChange()">
+              </div>
+              <div class="mb-3">
+                <label for="creditos" class="form-label fw-bold">Créditos</label>
+                <input type="number" class="form-control" id="creditos" [(ngModel)]="formItem.creditos" name="creditos" step="0.01" (input)="onSaldoChange()">
+              </div>
+              <div class="mb-3 bg-light p-3 rounded">
+                <label class="form-label fw-bold">Saldo Actual (Calculado)</label>
+                <input type="text" class="form-control fw-bold" id="saldoActual" [value]="saldoActual | currency:'USD':'symbol':'1.2-2'" readonly>
+                <small class="text-muted d-block mt-1">
+                  Fórmula: SaldoAnterior + Débitos - Créditos
+                </small>
+              </div>
+            </div>
+          </div>
+
+          <!-- Vista de Documentos - SOLO LECTURA -->
+          <div *ngIf="hasPersonaData()" class="mt-4">
+            <div class="card shadow-sm border-0 mb-3">
+              <div class="card-header bg-info text-white">
+                <h5 class="mb-0"><i class="bi bi-card-text me-2"></i>Documentos de la Persona</h5>
+              </div>
+              <div class="card-body">
+                <div *ngIf="documentos.length > 0; else noDocumentos" class="row g-3">
+                  <div *ngFor="let doc of documentos" class="col-md-6">
+                    <div class="border rounded p-3 bg-light">
+                      <strong>{{doc.tipoDocumento?.nombre || 'Tipo no disponible'}}:</strong>
+                      <div class="fw-bold">{{doc.noDocumento}}</div>
+                    </div>
+                  </div>
+                </div>
+                <ng-template #noDocumentos>
+                  <div class="alert alert-info">
+                    <i class="bi bi-info-circle me-2"></i>
+                    No se encontraron documentos para esta persona.
+                  </div>
+                </ng-template>
+              </div>
+            </div>
+          </div>
+
+          <!-- Mensaje para completar datos de persona primero -->
+          <div *ngIf="!hasPersonaData() && (opcion.alta || opcion.cambio)">
+          </div>
+
+          <div class="d-flex justify-content-end mt-3">
+            <button type="submit" class="btn btn-primary me-2" [disabled]="!hasBasicCuentaData()">
+              <i class="bi bi-save me-1"></i> {{ isEdit ? 'Actualizar' : 'Crear Cuenta' }}
+            </button>
+            <button type="button" class="btn btn-outline-secondary" (click)="resetForm()">
+              <i class="bi bi-x-circle me-1"></i> Cancelar
+            </button>
+          </div>
+        </form>
+      </div>
+    </div>
+  </div>
+  <ng-template #noOpcion>
+    <div class="alert alert-warning mt-4" role="alert">
+      No tienes permisos para esta sección.
+    </div>
+  </ng-template>
+</div>

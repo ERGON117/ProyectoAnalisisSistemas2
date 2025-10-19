@@ -1,9 +1,9 @@
-// src/app/core/models/menu-response.model.ts
 export interface MenuResponse {
   id: number;
   nombre: string;
   orden: number;
-  menus: MenuItem[];
+  // Cambio: Renombrado 'menus' a 'menuItems' para mantener consistencia con el backend
+  menuItems: MenuItem[];
 }
 
 export interface MenuItem {

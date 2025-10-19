@@ -1,4 +1,3 @@
-// src/app/components/login/login.component.ts
 import { Component } from '@angular/core';
 import { AuthService } from '../../core/services/auth.service';
 import { LoginRequest } from '../../core/models/login-request.model';
@@ -13,12 +12,14 @@ export class LoginComponent {
   loginRequest: LoginRequest = { username: '', password: '' };
   errorMessage: string = '';
   missingFields: string[] = [];
+  showChangePasswordPrompt: boolean = false;
 
   constructor(private authService: AuthService, private router: Router) {}
 
   onSubmit() {
     this.missingFields = [];
     this.errorMessage = '';
+    this.showChangePasswordPrompt = false;
 
     // Validar campos vacíos
     if (!this.loginRequest.username) {
@@ -36,9 +37,16 @@ export class LoginComponent {
     this.authService.login(this.loginRequest).subscribe({
       next: (response) => {
         if (response.success) {
-          this.router.navigate(['/dashboard']);
+          if (response.requiereCambioPassword) {
+            this.showChangePasswordPrompt = true;
+            this.errorMessage = response.mensaje || 'Se requiere cambiar la contraseña.';
+            // Almacenar el correo electrónico para usarlo en el componente de cambio de contraseña
+            localStorage.setItem('changePasswordEmail', this.loginRequest.username);
+          } else {
+            this.router.navigate(['/dashboard']);
+          }
         } else {
-          this.errorMessage = 'Advertencia: Contraseña incorrecta o usuario no válido.';
+          this.errorMessage = response.mensaje || 'Error desconocido en la autenticación.';
         }
       },
       error: () => {

@@ -1,0 +1,51 @@
+/* src/app/components/asignar-opciones/asignar-opciones.component.css */
+.container {
+  max-width: 1000px;
+  margin: 20px auto;
+  padding: 20px;
+}
+.form-group {
+  margin-bottom: 20px;
+}
+label {
+  display: block;
+  margin-bottom: 5px;
+  font-weight: bold;
+}
+select {
+  width: 100%;
+  padding: 8px;
+  border: 1px solid #ccc;
+}
+.table-container {
+  margin: 20px 0;
+  overflow-x: auto;
+}
+table {
+  width: 100%;
+  border-collapse: collapse;
+}
+th, td {
+  border: 1px solid #ddd;
+  padding: 10px;
+  text-align: center;
+}
+th {
+  background-color: #f4f4f4;
+  font-weight: bold;
+}
+input[type="checkbox"] {
+  transform: scale(1.2);
+}
+.save-btn {
+  background-color: #007bff;
+  color: white;
+  padding: 10px 20px;
+  border: none;
+  border-radius: 4px;
+  cursor: pointer;
+}
+.save-btn:disabled {
+  background-color: #ccc;
+  cursor: not-allowed;
+}
